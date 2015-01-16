@@ -1,4 +1,5 @@
 library(rpart)
+library(ROCR)
 data = read.csv(file="data", header=F, sep=",")
 colnames(data) = c("PregnantCount","Glucose","BP","Triceps","Insulin","BMI","DPF","Age","Class")
 N = nrow(data)
@@ -38,12 +39,26 @@ for (i in (1:K))
 
 	opt = cfit$cptable[which.min(cfit$cptable[,"xerror"]),"CP"]							# Pruning
 	prunedTree = prune(cfit, cp = opt)
-	# fname = sprintf("rplotprunegini%d_%d.png",i,as.integer(Sys.time()))
-	fname = sprintf("rplotprunegini%d.png",i)
+
+	predictedFactor = predict(prunedTree, testData, type="class")
+	predictedFrame = as.data.frame.factor(predictedFactor)
+	predicted = c(predictedFrame[ ,1]) - 1 									# WHY 1&2 :'( HELP!! 
+	actual = testData$Class
+	# print(predicted)
+	# print(actual)
+	metrics = prediction(predicted, actual)
+	fname = sprintf("perf%d.png",i)
+	
 	png(file=fname, width=800, height=600, res=90)
-	plot(prunedTree, uniform=TRUE , main="Diabetes Decision Tree")
-	text(prunedTree, use.n=TRUE, all=TRUE, cex=.7)
+	plot(performance(metrics,"f"))
+	print("-----------")
+
+	# fname = sprintf("rplotprunegini%d_%d.png",i,as.integer(Sys.time()))
+	# fname = sprintf("rplotprunegini%d.png",i)
+	# png(file=fname, width=800, height=600, res=90)
+	# plot(prunedTree, uniform=TRUE , main="Diabetes Decision Tree")
+	# text(prunedTree, use.n=TRUE, all=TRUE, cex=.7)
+	# print(cfit)
+	# summary(cfit)
 }
 
-# print(cfit)
-# summary(cfit)
