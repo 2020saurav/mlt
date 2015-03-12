@@ -1,0 +1,366 @@
+\documentclass[12pt]{article} 
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{mathrsfs} 
+\usepackage{hyperref}
+
+\pagestyle{fancyplain}
+\fancyhead{}
+\fancyfoot[L]{} 
+\fancyfoot[C]{} 
+\fancyfoot[R]{\thepage} 
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{13.6pt}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section} 
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} 
+\title{	
+\normalfont \normalsize 
+\textsc{CS771A: Machine Learning: Tools, Techniques, Applications} \\ [25pt] 
+\horrule{0.5pt} \\[0.4cm] 
+\huge Assignment 3 \\
+\horrule{2pt} \\[0.5cm] 
+}
+
+\author{Saurav Kumar, 12641} 
+
+\date{\normalsize\today}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\begin{document}
+
+\maketitle 
+
+{\bf Problem 1}
+\bigskip
+
+Suppose the $d$-sized vector $\vec{x}$ in a population with two classes is normmally distributed as: $\vec{x} \thicksim \mathcal{N}(\vec{\mu},\varSigma_{j}), j = 1,2 $ where $\varSigma_{j} = \sigma^{2}_{j}[(1 - \rho_{j})I + \rho_{j}\vec{1}\vec{1}^{T}]$, where $\vec{1}$ is a vector of all 1s and $I$ is the identity matrix. Show that the Bayes discriminant function is given by upto a constant by:\\\\
+\indent{\large$-\frac{1}{2}(c_{11} - c_{12})b_{1} + \frac{1}{2}(c_{21}-c_{22})b_{2}$}, where\\\\
+$b_{1} = (\vec{x}-\vec{\mu})^{T}(\vec{x}-\vec{\mu})$\\
+$b_{2} = (\vec{1}^{T}(\vec{x}-\vec{\mu}))^{2}$\\
+$c_{1j} = [\sigma_{j}^{2}(1-\rho_{j})]^{-1} $ \\
+$c_{2j} = \rho_{j}[\sigma_{j}^{2}(1-\rho_{j})(1 + (d-1)\rho_{j})]^{-1} $\\
+
+\bigskip
+{\bf Solution:}
+\bigskip
+\\
+Probability Distribution,
+\begin{align}
+p(\vec{x}|\omega_{j}) & = 
+\frac{e^{-\frac{1}{2}(\vec{x}-\vec{\mu})^{T}\varSigma_{j}^{-1}(\vec{x}-\vec{\mu})}}{(2\pi)^{\frac{d}{2}}|\varSigma_{j}|^{\frac{1}{2}}}
+\end{align}
+\\
+Bayes Discriminant Function,
+\begin{align}
+g(\vec{x}) & = \ln (\frac{p(\vec{x}|\omega_{1})}{p(\vec{x}|\omega_{2})})\\
+& = -\frac{1}{2}(\vec{x}-\vec{\mu})^{T}\varSigma^{-1}_{1}(\vec{x}-\vec{\mu}) + \frac{1}{2}(\vec{x}-\vec{\mu})^{T}\varSigma^{-1}_{2}(\vec{x}-\vec{\mu}) + constants
+\end{align}
+\newpage
+\normalsize
+By Ken Miller's identity$^{1}$, if $A$ and $A+B$ are invertible, and $B$ has rank 1, then let g=trace($BA^{-1}$). Then g$\neq$-1 and
+\begin{align}
+(A+B)^{-1} &=  A^{-1} - \frac{1}{(1+g)} A^{-1}BA^{-1}
+\end{align}
+To calculate $g(\vec{x})$, we need to calculate inverse of $\varSigma$. Given:
+\begin{align}
+\varSigma_{j} &= \sigma^{2}_{j}[(1 - \rho_{j})I + \rho_{j}\vec{1}\vec{1}^{T}]\\
+\implies \varSigma_{j}^{-1} &= \frac{1}{\sigma^{2}_{j}}[(1 - \rho_{j})I + \rho_{j}\vec{1}\vec{1}^{T}]^{-1}
+\end{align}
+To use Ken Miller's identity, let $A = (1-\rho_{j})I$ and $B = \rho_{j}\vec{1}\vec{1}^{T}$.
+Assuming $\varSigma_{j}$ to be invertible, $(A+B)$ is invertible. Since $A$ is constant times identity matrix, $A$ is also invertible.
+Since all the rows of $B$ are identical, $Rank(B) = 1$.
+\begin{align}
+B &= \rho_{j}\vec{1}\vec{1}^{T}\\
+A^{-1} &= \frac{1}{1-\rho_{j}}I\\
+BA^{-1} &= \frac{\rho_{j}}{1-\rho_{j}}\vec{1}\vec{1}^{T}\\
+g &= trace(BA^{-1})\\
+&= \frac{d . \rho_{j}}{1-\rho_{j}}
+\end{align}
+
+Using (0.4),
+\begin{align}
+(A+B)^{-1} &= \frac{1}{1-\rho_{j}}I - \frac{1}{1+(\frac{d . \rho_{j}}{1-\rho_{j}})}.\frac{1}{1-\rho_{j}}I.\frac{\rho_{j}}{1-\rho_{j}}\vec{1}\vec{1}^{T}\\
+\varSigma_{j}^{-1} &= \frac{1}{\sigma_{j}^{2}(1-\rho_{j})}I - \frac{\rho_{j}}{\sigma_{j}^{2}(1-\rho_{j})(1+d\rho_{j}-\rho_{j})}\vec{1}\vec{1}^{T}
+\end{align}
+
+Neglecting $constants$, (0.3) becomes
+\begin{align}
+g(\vec{x}) & = -\frac{1}{2}(\vec{x}-\vec{\mu})^{T}(\frac{1}{\sigma_{1}^{2}(1-\rho_{1})}I - \frac{\rho_{1}}{\sigma_{1}^{2}(1-\rho_{1})(1+d\rho_{1}-\rho_{1})}\vec{1}\vec{1}^{T})(\vec{x}-\vec{\mu}) 
+\\
+& + \frac{1}{2}(\vec{x}-\vec{\mu})^{T}(\frac{1}{\sigma_{2}^{2}(1-\rho_{2})}I - \frac{\rho_{2}}{\sigma_{2}^{2}(1-\rho_{2})(1+d\rho_{2}-\rho_{2})}\vec{1}\vec{1}^{T})(\vec{x}-\vec{\mu}) \\\\
+&= -\frac{1}{2}(\frac{1}{\sigma_{1}^{2}(1-\rho_{1})}-\frac{1}{\sigma_{2}^{2}(1-\rho_{2})})(\vec{x}-\vec{\mu})^{T}(\vec{x}-\vec{\mu})\\
+& + \frac{1}{2}(\vec{x}-\vec{\mu})^{T}(\frac{\rho_{1}}{\sigma_{1}^{2}(1-\rho_{1})(1+d\rho_{1}-\rho_{1})}\vec{1}\vec{1}^{T} - \frac{\rho_{2}}{\sigma_{2}^{2}(1-\rho_{2})(1+d\rho_{2}-\rho_{2})}\vec{1}\vec{1}^{T})(\vec{x}-\vec{\mu})
+\end{align}\\
+\vspace{1.6cm}
+\small{$^{1}$ \url{http://math.stackexchange.com/questions/17776/}}
+\newpage
+\normalsize
+Substituting $b_{1}, b_{2}, c_{1j}, c_{2j}$,
+\begin{align}
+g(\vec{x}) &= -\frac{1}{2}(c_{11}-c_{12})b_{1}
+			+ \frac{1}{2}(c_{21}-c_{22})[(\vec{x}-\vec{\mu})^{T}(\vec{1}\vec{1}^{T})(\vec{x}-\vec{\mu})]
+\end{align}
+Let the column vector $(\vec{x}-\vec{\mu})$ be $\vec{z}$. We have to calculate $\vec{z}^{T}(\vec{1}\vec{1}^{T})\vec{z}$.
+\begin{align}
+\vec{z}^{T}(\vec{1}\vec{1}^{T}) &= \varSigma_{i=1}^{d}z_{i} \vec{1}^{T}\\
+\vec{z}^{T}(\vec{1}\vec{1}^{T})\vec{z} &=\varSigma_{i=1}^{d}z_{i} \vec{1}^{T}\vec{z}\\
+&=(\varSigma_{i=1}^{d}z_{i})(\varSigma_{i=1}^{d}z_{i})\\
+&=(\vec{1}^{T}\vec{z})^{2}\\
+&=(\vec{1}^{T}(\vec{x}-\vec{\mu}))^{2}\\
+&=b_{2}
+\end{align}
+Hence, the discriminant function $g(\vec{x})$ becomes,
+{\large\begin{align}
+g(\vec{x})&=-\frac{1}{2}(c_{11} - c_{12})b_{1} + \frac{1}{2}(c_{21}-c_{22})b_{2} 
+\end{align}}
+
+\newpage
+\normalsize
+{\bf Problem 2}
+\bigskip
+
+Let $p(x)$ be modelled as mixture $p(x) = \varSigma_{j=1}^{g}\pi_{j}p(x|\mu_{j},m_{j})$, where $p(x|\mu,m)$ is given by a gamma distribution with mean $\mu$ and order parameter $m$ as follows:\\
+\begin{align}
+p(x|\mu,m) = \frac{m}{(m-1)!\mu}(\frac{mx}{\mu})^{m-1}exp(-\frac{mx}{\mu})
+\end{align}\\
+Derive the EM parameter update equations for $\pi_{j}$, $\mu_{j}$ and $m_{j}$.\\\\\\
+\bigskip
+{\bf Solution:}
+\\
+Given a set $\mathcal{L}$ of $n$ independent observations, $\{\vec{x}\} = \{\vec{x_{1}},...,\vec{x_{n}}\}$, the Likelihood function for the mixture distribution $p(x) = \varSigma_{j=1}^{g}\pi_{j}p(x|\mu_{j},m_{j})$ is given by:
+\begin{equation*}
+L(\vec{\psi}) = \prod\limits_{i=1}^{n}\left(\sum\limits_{j=1}^{g}\pi_{j}p(x|\mu_{j},m_{j})\right)
+\end{equation*}
+where $\psi$ denotes the set of parameters $\{\pi_{1},..,\pi_{g};(\mu_{1},m_{1}),..,(\mu_{g},m_{g})\}$.\\
+Our aim is to maximize $L(\vec{\psi})$.\\
+Let us augment the component labels $z_{i}$ to $x_{i}$ to form $y_{i}$, such that $y_{i}^{T} = (x_{i}^{T}, z_{i})$.\\
+So,\\
+{\large
+\begin{equation*}
+p(\vec{y}|\vec{\psi}) = p(y_{1},..,y_{n}|\vec{\psi})
+\end{equation*}
+\begin{equation*}
+ = \prod\limits_{i=1}^{n}\prod\limits_{j=1}^{g}\left[\pi_{j}p(x_i|\mu_j,m_j) \right]^{z_{ji}}
+\end{equation*}
+}
+where $z_{ji}$ are the indictor variables, $z_{ji}$ = 1 if the pattern $\vec{x_i}$ is in group $j$, zero otherwise.\\
+Hence,\\
+{\large
+\begin{equation*}
+log(p(y_{1},..,y_{n}|\vec{\psi})) = \sum\limits_{i=1}^n\sum\limits_{j=1}^g z_{ji}log(\pi_{j}p(x_i|\mu_j,m_j))
+\end{equation*}
+\begin{equation*}
+= \sum\limits_{i=1}^n z^{T}_{i}\vec{l} + \sum\limits_{i=1}^n z_{i}^{T}\vec{u}_{i}(\vec{\mu},\vec{m})
+\end{equation*}
+}
+where the vector $\vec{l}$ has $j$th component log($\pi_{j}$); $\vec{u}_{i}(\vec{\vec{\mu},\vec{m}})$ has $j$th component log($p(\vec{x}_{i}|\vec{\mu},\vec{m})$); and $z_i$ has components $z_{ji}$, $j=1,...,g$.
+
+
+
+\newpage
+\normalsize
+\textbf{\\E-Step:} Q is formed as\\
+\begin{equation*}
+Q(\psi,\psi^{(m)}) = E[log(p(y_1,..,y_n|\psi))|\{\vec{x}\},\psi^{(m)}]
+\end{equation*}
+\begin{equation*}
+= \sum\limits_{i=1}^{n}w_{i}^{T}\vec{l} + \sum\limits_{i=1}^{n} w_{i}^{T} \vec{u}_{i}(\vec{\mu},\vec{m})
+\end{equation*}
+where $w_i = E[z_i|\vec{x}_i,\psi^{(m)}]$ with $j$th component the probability that $\vec{x}_i$ belongs to class $j$ given the current paramter estimates, $\psi^{(m)}$.\\
+{\large
+\begin{equation*}
+w_{ij} = \frac{\pi_{j}^{(m)}p\left( \vec{x}_i|\vec{\mu}^{(m)}_{j},\vec{m}_{j}^{(m)}\right)}{\sum\limits_{k}\pi_{k}^{(m)}p\left( \vec{x}_i|\vec{\mu}^{(m)}_{k},\vec{m}_{k}^{(m)}\right)}
+\end{equation*}
+}\\\\
+\textbf{M-Step:}\\
+This consists of maximizing $Q$ with respect to $\vec{\psi}$. Consider the parameters $\pi_j, \vec{\mu}_j, \vec{m}_j$ in turn.
+\begin{itemize}
+\item Estimation of $\pi$:\\\\
+Maximum $Q$ can be obtained by differentiating $Q-\lambda(\varSigma_{j=1}^{g}\pi_j -1)$ with respect to $\pi_j$, where $\lambda$ is a Lagrange multiplier. 
+\begin{equation*}
+\frac{\partial}{\partial\pi_j}\left( Q-\lambda\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+\begin{equation*}
+\implies\frac{\partial}{\partial\pi_j}\left( 
+\sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln(p(x_i|\mu_j,m_j)) + \sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln\pi_j
+\right)
+- \lambda\frac{\partial}{\partial\pi_j}\left(\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+\begin{equation*}
+\implies \sum\limits_{i=1}^{n}w_{ij}.\frac{1}{\pi_j} - \lambda = 0
+\end{equation*}\\
+The constraint $\varSigma_{j=1}^{g}\pi_j = 1$ gives $\lambda = \varSigma_{j=1}^{g}\varSigma_{i=1}^{n}w_{ij} = n$ and we have the estimate of $\pi_j$ as
+{\large
+\begin{equation*}
+\hat{\pi}_j^{(m+1)} = \frac{1}{n}\sum\limits_{i=1}^{n}w_{ij}
+\end{equation*}
+
+}
+\newpage
+\normalsize
+\item Estimation of $\mu$:\\
+\begin{equation*}
+\frac{\partial}{\partial\mu_j}\left( Q-\lambda\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+\begin{equation*}
+\frac{\partial}{\partial\mu_j}\left( 
+\sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln(p(x_i|\mu_j,m_j)) + \sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln\pi_j
+\right)
+- \lambda\frac{\partial}{\partial\mu_j}\left(\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+\\Ignoring terms independent of $\mu_j$ as their derivative would vanish, we get:\\
+\begin{equation*}
+\frac{\partial}{\partial\mu_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}ln(p(x_i|\mu_j,m_j)) 
+\right) = 0
+\end{equation*}
+\begin{equation*}
+\frac{\partial}{\partial\mu_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}ln\left(\frac{m_j}{(m_j-1)!\mu_j}(\frac{m_jx_i}{\mu_j})^{m_j-1}exp(-\frac{m_jx_i}{\mu_j})\right) 
+\right) = 0
+\end{equation*}
+\\Again, ignoring terms independent of $\mu_j$ as their derivative would vanish, we get:\\
+\begin{equation*}
+\frac{\partial}{\partial\mu_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}ln\left(\frac{1}{(\mu_j)^{m_j}}.exp(-\frac{m_jx_i}{\mu_j})\right) 
+\right) = 0
+\end{equation*}
+\begin{equation*}
+\implies \sum\limits_{i=1}^{n}w_{ij}\left(
+-\frac{m_j}{\mu_j} + \frac{m_jx_i}{\mu_j^2}
+\right) = 0 
+\end{equation*}
+\begin{equation*}
+\implies \sum\limits_{i=1}^{n}w_{ij}\left(
+x_i-\mu_j
+\right) = 0 
+\end{equation*}
+{\large
+\begin{equation*}
+\implies \hat{\mu}_j^{(m+1)} = \frac{\sum\limits_{i=1}^{n}w_{ij}x_i}{\sum\limits_{i=1}^{n}w_{ij}} = \frac{1}{n\hat{\pi}_j}\sum\limits_{i=1}^{n}w_{ij}x_i \hspace{150pt} ... (1)
+\end{equation*}
+}
+\newpage
+\normalsize
+\item Estimation of $m$\\
+\begin{equation*}
+\frac{\partial}{\partial m_j}\left( Q-\lambda\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+\begin{equation*}
+\frac{\partial}{\partial m_j}\left( 
+\sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln(p(x_i|\mu_j,m_j)) + \sum\limits_{i=1}^{n}\sum\limits_{j=1}^{g}w_{ij}ln\pi_j
+\right)
+- \lambda\frac{\partial}{\partial m_j}\left(\sum\limits_{j=1}^{g}\pi_j-1\right) = 0
+\end{equation*}
+Ignoring terms independent of $m_j$ as their derivative would vanish, we get:\\
+\begin{equation*}
+\frac{\partial}{\partial m_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}ln(p(x_i|\mu_j,m_j)) 
+\right) = 0
+\end{equation*}
+
+\begin{equation*}
+\implies\frac{\partial}{\partial m_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}ln\left(\frac{m_j}{(m_j-1)!\mu_j}(\frac{m_jx_i}{\mu_j})^{m_j-1}exp(-\frac{m_jx_i}{\mu_j})\right) 
+\right) = 0
+\end{equation*}
+
+\begin{equation*}
+\implies\frac{\partial}{\partial m_j}\left( 
+\sum\limits_{i=1}^{n}w_{ij}
+\left(
+ln(m_j) - ln((m_j-1)!) - ln(\mu_j) + (m_j-1)ln(\frac{m_jx_i}{\mu_j}) - \frac{m_jx_i}{\mu_j}
+\right)
+\right) = 0
+\end{equation*}
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}
+\left(
+\frac{1}{m_j} - \frac{\partial}{\partial m_j}ln((m_j-1)!)  +
+(m_j-1)(\frac{1}{m_j}) + ln(\frac{m_jx_i}{\mu_j})
+ - \frac{x_i}{\mu_j}
+\right) = 0
+\end{equation*}
+\\Using Stirling's Approximation,
+\begin{equation*}
+ln(n!) = n ln(n) - n + O(ln(n))
+\end{equation*}
+\begin{equation*}
+\frac{\partial}{\partial n}ln((n-1)!) \approx 
+\frac{n-1}{n-1} + ln(n-1) -1
+\end{equation*}
+\begin{equation*}
+= ln(n-1)
+\end{equation*}
+\\Substituting this in our equation, we get:\\
+\begin{equation*} 
+\sum\limits_{i=1}^{n}w_{ij}
+\left(
+\frac{1}{m_j} - ln(m_j-1)  +
+(m_j-1)(\frac{1}{m_j}) + ln(\frac{m_jx_i}{\mu_j})
+ - \frac{x_i}{\mu_j}
+\right) = 0
+\end{equation*}
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}\left( - ln(m_j-1)  + (m_j-1+1)(\frac{1}{m_j}) + ln(\frac{m_jx_i}{\mu_j}) - \frac{x_i}{\mu_j}\right) = 0
+\end{equation*}
+
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}\left( - ln(m_j-1) + 1  + ln(\frac{m_jx_i}{\mu_j}) - \frac{x_i}{\mu_j}\right) = 0
+\end{equation*}
+
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}\left(1 + ln(\frac{m_jx_i}{\mu_j(m_j-1)}) - \frac{x_i}{\mu_j}\right) = 0
+\end{equation*}
+
+To simplify, let us substitute $(\frac{m_j}{\mu_j(m_j-1)})$ as $m'_j$:
+
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}\left(1 + ln(m'_jx_i) - \frac{x_i}{\mu_j}\right) = 0
+\end{equation*}
+
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}ln(m'_jx_i) = \frac{1}{\mu_j} \sum\limits_{i=1}^{n}w_{ij}x_i - \sum\limits_{i=1}^{n}w_{ij}
+\end{equation*}
+Substitute $\sum\limits_{i=1}^{n}w_{ij}$ as $W_j$.\\
+Using $(1)$, substituting estimate of $\mu_j$, we get:\
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}ln(m'_jx_i) = n.\hat{\pi}_j - W_j
+\end{equation*}
+\begin{equation*} 
+\implies\sum\limits_{i=1}^{n}w_{ij}ln(m'_j) + \sum\limits_{i=1}^{n}w_{ij}ln(x_i) = n.\hat{\pi}_j - W_j
+\end{equation*}
+\begin{equation*} 
+\implies ln(m'_j) = \frac{n.\hat{\pi}_j - W_j - \sum\limits_{i=1}^{n}w_{ij}ln(x_i)}{\sum\limits_{i=1}^{n}w_{ij}}
+\end{equation*}
+\begin{equation*} 
+\implies  \frac{m_j}{\mu_j(m_j-1)} = exp\left(\frac{n.\hat{\pi}_j - W_j - \sum\limits_{i=1}^{n}w_{ij}ln(x_i)}{\sum\limits_{i=1}^{n}w_{ij}}\right)
+\end{equation*}
+{
+\begin{equation*} 
+\implies \hat{m_j}^{(m+1)} = \frac{\hat{\mu_j}^{(m+1)}.X}{\hat{\mu_j}^{(m+1)}.X - 1},\ 
+where\  X = exp\left(\frac{n.\hat{\pi}_j^{(m+1)} - \sum\limits_{i=1}^{n}w_{ij} - \sum\limits_{i=1}^{n}w_{ij}ln(x_i)}{\sum\limits_{i=1}^{n}w_{ij}}\right)
+\end{equation*}
+}
+\end{itemize}
+
+\bigskip
+\bigskip
+\bigskip
+{\large
+{\bf Problem 3}\\\\
+\indent a. Classification Error Rate on Test Set: 13.6\% \\\\
+\indent b. Classification Error Rate on Test Set (using LDA): 13.8\%\\\\
+\indent c. Classification Error Rate on Test Set (using QDA): 14.0\% \\\\
+\indent Corresponding code files are attached.
+\bigskip
+}
+\end{document}
+
+% Template inspired from http://www.latextemplates.com/template/short-sectioned-assignment
